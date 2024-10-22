@@ -1,22 +1,14 @@
-#Random Vs. Random
-from kaggle_environments import make, evaluate
 
-#Required for connectx submission
-def act(observation, configuration):
-    board = observation.board
-    columns = configuration.columns
-    return [c for c in range(columns) if board[c] == 0][0]
+# This is the random agent submitted to the competition.
+def my_agent(obs, config):
+    import numpy as np
+    import random
+    from kaggle_environments import make, evaluate
 
-env = make("connectx", debug=True)
-env.render()
+    env = make("connectx" , debug=True)
+    env.render()
+    
+    # Return which column to drop a checker (action).
+    valid_moves = [col for col in range(config.columns) if obs.board[col] == 0]
+    return random.choice(valid_moves)
 
-#Our random agent
-def my_agent(observation, configuration):
-    from random import choice
-    return choice([c for c in range(configuration.columns) 
-                   if observation.board[c] == 0])
-# Two random agents play one game round
-env.run([my_agent, "random"])
-
-# Show the game
-env.render(mode="ipython", width=500, height=450)
