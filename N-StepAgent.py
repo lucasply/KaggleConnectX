@@ -6,12 +6,7 @@ import numpy as np
 import random
 import time
 
-#Code for One-step look ahead
-# Calculates score if agent drops piece in selected column
-def score_move(grid, col, mark, config):
-    next_grid = drop_piece(grid, col, mark, config)
-    score = get_heuristic(next_grid, mark, config)
-    return score
+#Helper Functions for N-Step lookahead
 
 # Helper function for score_move: gets board at next step if agent drops piece in selected column
 def drop_piece(grid, col, mark, config):
@@ -21,14 +16,6 @@ def drop_piece(grid, col, mark, config):
             break
     next_grid[row][col] = mark
     return next_grid
-
-# Helper function for score_move: calculates value of heuristic for grid
-def get_heuristic(grid, mark, config):
-    num_threes = count_windows(grid, 3, mark, config)
-    num_fours = count_windows(grid, 4, mark, config)
-    num_threes_opp = count_windows(grid, 3, mark%2+1, config)
-    score = num_threes - 1e2*num_threes_opp + 1e6*num_fours
-    return score
 
 # Helper function for get_heuristic: checks if window satisfies heuristic conditions
 def check_window(window, num_discs, piece, config):
@@ -62,21 +49,6 @@ def count_windows(grid, num_discs, piece, config):
             if check_window(window, num_discs, piece, config):
                 num_windows += 1
     return num_windows
-
-#One step agent
-def OneStepAgent(obs, config):
-    # Get list of valid moves
-    valid_moves = [c for c in range(config.columns) if obs.board[c] == 0]
-    # Convert the board to a 2D grid
-    grid = np.asarray(obs.board).reshape(config.rows, config.columns)
-    # Use the heuristic to assign a score to each possible board in the next turn
-    scores = dict(zip(valid_moves, [score_move(grid, col, obs.mark, config) for col in valid_moves]))
-    # Get a list of columns (moves) that maximize the heuristic
-    max_cols = [key for key in scores.keys() if scores[key] == max(scores.values())]
-    # Select at random from the maximizing columns
-    return random.choice(max_cols)
-
-#Code for N-Step lookahead
 
 # Helper function for minimax: checks if agent or opponent has four in a row in the window
 def is_terminal_window(window, config):
@@ -133,6 +105,12 @@ def minimax(node, depth, maximizingPlayer, mark, config):
             value = min(value, minimax(child, depth-1, True, mark, config))
         return value
 
+#Get Scores for each possible move using minimax
+def NS_score_move(grid, col, mark, config, nsteps):
+    next_grid = drop_piece(grid, col, mark, config)
+    score = minimax(next_grid, nsteps-1, False, mark, config)
+    return score
+
 #This is the heuristic used for N-Step
 def NS_Get_heuristic(grid, mark, config):
     num_threes = count_windows(grid, 3, mark, config)
@@ -140,12 +118,6 @@ def NS_Get_heuristic(grid, mark, config):
     num_threes_opp = count_windows(grid, 3, mark%2+1, config)
     num_fours_opp = count_windows(grid, 4, mark%2+1, config)
     score = num_threes - 1e2*num_threes_opp - 1e4*num_fours_opp + 1e6*num_fours
-    return score
-
-#Get Scores for each possible move using minimax
-def NS_score_move(grid, col, mark, config, nsteps):
-    next_grid = drop_piece(grid, col, mark, config)
-    score = minimax(next_grid, nsteps-1, False, mark, config)
     return score
 
 N_STEPS = 3 #Change this value to change how many steps ahead the agent looks
