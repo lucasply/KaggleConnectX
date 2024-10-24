@@ -117,8 +117,21 @@ def NS_Get_heuristic(grid, mark, config):
     num_fours = count_windows(grid, 4, mark, config)
     num_threes_opp = count_windows(grid, 3, mark%2+1, config)
     num_fours_opp = count_windows(grid, 4, mark%2+1, config)
-    score = num_threes - 1e2*num_threes_opp - 1e4*num_fours_opp + 1e6*num_fours
+    avg_mid = getAvgMiddle(grid, mark)
+    score = 1e1*num_threes - 1e3*num_threes_opp - 1e5*num_fours_opp + 1e7*num_fours + avg_mid
     return score
+
+def getAvgMiddle(grid, mark):
+    yPos = []
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if(grid[i][j] == mark):
+                yPos.append(j)
+    sum = 0
+    for i in range(len(yPos)):
+        sum += yPos[i]
+    avg = (sum / len(yPos) - 2) -.1
+    return avg
 
 N_STEPS = 3 #Change this value to change how many steps ahead the agent looks
 #Agent for N-Step lookahead
