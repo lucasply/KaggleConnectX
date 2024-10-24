@@ -130,6 +130,18 @@ def getAvgMiddle(grid, mark):
     sum = 0
     for i in range(len(yPos)):
         sum += yPos[i]
+    avg = 1/((sum / len(yPos) - 2) +.1)
+    return avg
+
+def getAvgMiddle(grid, mark):
+    yPos = []
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if(grid[i][j] == mark):
+                yPos.append(j)
+    sum = 0
+    for i in range(len(yPos)):
+        sum += yPos[i]
     avg = (sum / len(yPos) - 2) -.1
     return avg
 
