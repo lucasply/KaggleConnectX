@@ -1,7 +1,9 @@
-#My_Agent
+#This file is used to prepare the agent to be submitted to the competition. 
+#This file was used for both parts of the project
 
-
-def my_agent(obs, config):
+#This is the NStep lookahead agent from part one of the project
+#I removed this method before running the file when making the agent for part two
+def NStep_agent(obs, config):
     from kaggle_environments import evaluate, make, utils
     import numpy as np
     import random
@@ -150,22 +152,49 @@ def my_agent(obs, config):
         return 3
     return random.choice(max_cols)
 
+
+#This is the agent trained using reinforcemnt learning for part 2 of the project
+def RL_agent(obs, config):
+    import random
+    import numpy as np
+    from stable_baselines3 import PPO 
+    from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
+
+    global model 
+    model = None
+    if model == None:
+        model = PPO.load("Final_Model")
+    
+    # Use the best model to select a column
+    col, _ = model.predict(np.array(obs['board']).reshape(1, 6,7))
+    # Check if selected column is valid
+    is_valid = (obs['board'][int(col)] == 0)
+    # If not valid, select random move. 
+    if is_valid:
+        return int(col)
+    else:
+        return random.choice([col for col in range(config.columns) if obs.board[int(col)] == 0])
+
+#Main -- THis creates a file that can be submitted to the competetion
 from kaggle_environments import make, utils
 import sys
 import inspect
 import os
+#This takes a function and creates a file that contains only the input function
 def write_agent_to_file(function, file):
     with open(file, "a" if os.path.exists(file) else "w") as f:
         f.write(inspect.getsource(function))
         print(function, "written to", file)
-write_agent_to_file(my_agent, "main.py")
+#This line saves the RL_agent function to a file called main.py
+write_agent_to_file(RL_agent, "main.py")
 
+#This par of the code runs a test to see if the agent is woking
+#It loads the agent in the newly created main.py and makes it play a game against itself
+#This is the same as the validation episode that occurs when you submit an agent to the competetion. 
 out = sys.stdout
 submission = utils.read_file("main.py")
 agent = utils.get(submission)
 sys.stdout = out
-
 env = make("connectx", debug=True)
 env.run([agent, agent])
-
 print("\nSuccess!" if env.state[0].status == env.state[1].status == "DONE" else "\nFailed...")
