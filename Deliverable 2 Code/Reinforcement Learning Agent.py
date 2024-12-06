@@ -1,7 +1,5 @@
 #Reinforcement Learning Agent
-'''You need to run the folowing commands in the terminal '''
-# pip install matplotlib
-# pip install "stable-baselines3"
+#This is the file we used to train our RL agent
 
 import random
 import numpy as np
@@ -18,6 +16,7 @@ import torch.nn as nn
 from stable_baselines3 import PPO 
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
+#This class creates the training environemnt
 class ConnectFourGym(gym.Env):
     def __init__(self, agent2="random"):
         ks_env = make("connectx", debug=True)
@@ -82,20 +81,18 @@ class CustomCNN(BaseFeaturesExtractor):
 policy_kwargs = dict(
     features_extractor_class=CustomCNN,)
         
+#This is the agent that will use the trained model
 def agent1(obs, config):
+    import random
+    import numpy as np
+    from stable_baselines3 import PPO 
+    from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
+    global model 
+    model = None
+    if model == None:
+        model = PPO.load("Final_Model")
     # Use the best model to select a column
-    col, _ = model1.predict(np.array(obs['board']).reshape(1, 6,7))
-    # Check if selected column is valid
-    is_valid = (obs['board'][int(col)] == 0)
-    # If not valid, select random move. 
-    if is_valid:
-        return int(col)
-    else:
-        return random.choice([col for col in range(config.columns) if obs.board[int(col)] == 0])
-
-def agent2(obs, config):
-    # Use the best model to select a column
-    col, _ = model2.predict(np.array(obs['board']).reshape(1, 6,7))
+    col, _ = model.predict(np.array(obs['board']).reshape(1, 6,7))
     # Check if selected column is valid
     is_valid = (obs['board'][int(col)] == 0)
     # If not valid, select random move. 
@@ -105,22 +102,12 @@ def agent2(obs, config):
         return random.choice([col for col in range(config.columns) if obs.board[int(col)] == 0])
 
 #Main
-
-env = ConnectFourGym(agent2=agent2)
-
-model1=PPO.load("A1223_Model")
-model2=PPO.load("A2334_Model")
+#Create and environment for each game
+env1 = ConnectFourGym(agent2=agent1)
 
 print("Start")
-NewModel = PPO("CnnPolicy", env, policy_kwargs=policy_kwargs, verbose=0)
-NewModel.learn(total_timesteps=10000)
-NewModel.save("Final_Model")
+#Train in environment 1, make a new model
+model = PPO("CnnPolicy", env1, policy_kwargs=policy_kwargs, verbose=0)
+model.learn(total_timesteps=10000)
+model.save("Agent_Model")#Save the new model as a zip file with this name
 print("Done")
-# Create the game environment
-#env = make("connectx")
-
-# Two random agents play one game round
-#env.run([agent1, "random"])
-
-# Show the game
-#env.render(mode="ipython")

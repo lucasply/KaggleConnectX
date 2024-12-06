@@ -154,6 +154,7 @@ def NStep_agent(obs, config):
 
 
 #This is the agent trained using reinforcemnt learning for part 2 of the project
+#It has been modified to use the models we produced for deliverble 3
 def RL_agent(obs, config):
     import random
     import numpy as np
@@ -163,7 +164,7 @@ def RL_agent(obs, config):
     global model 
     model = None
     if model == None:
-        model = PPO.load("Final_Model")
+        model = PPO.load("Drake_3_Optuna")#Here it is loading the new model
     
     # Use the best model to select a column
     col, _ = model.predict(np.array(obs['board']).reshape(1, 6,7))
